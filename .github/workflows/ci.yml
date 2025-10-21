@@ -46,4 +46,4 @@ jobs:
 
         
         
-        python manage.py test polls.tests_selenium
+        python manage.py test polls.testselenium
