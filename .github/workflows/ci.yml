@@ -38,8 +38,8 @@ jobs:
         export CHROME_BIN=/usr/bin/chromium-browser
         export PATH=$PATH:/usr/bin
         
-        
-        export PYTHONPATH=. 
+       
+        export PYTHONPATH=.
         
         
         python manage.py test polls.testselenium --settings=djproject52.settings
