@@ -37,4 +37,7 @@ jobs:
       run: |
         export CHROME_BIN=/usr/bin/chromium-browser
         export PATH=$PATH:/usr/bin
+        
+        export DJANGO_SETTINGS_MODULE=djproject52.settings
+        
         python manage.py test polls.testselenium
