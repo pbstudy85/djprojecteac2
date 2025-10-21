@@ -42,4 +42,4 @@ jobs:
         export PYTHONPATH=.
         
         
-        python manage.py test polls.testselenium --settings=djproject52.settings
+        python manage.py test polls.tests_selenium --settings=djproject52.settings
