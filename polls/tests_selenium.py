@@ -15,7 +15,7 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
     superuser_password = "pirineus"
     staff_username_test = "staffpol"
     staff_password_test = "staff123"
-    
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -24,7 +24,7 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         chrome_options.add_argument("--headless=new")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.binary_location = "/usr/bin/google-chrome-stable"
+        chrome_options.binary_location = "/usr/bin/chromium-browser"
 
         cls.selenium = WebDriver(options=chrome_options)
         cls.wait = WebDriverWait(cls.selenium, 10)
@@ -44,9 +44,8 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         self.wait.until(EC.presence_of_element_located((By.NAME, 'username')))
         self.selenium.find_element(By.NAME, 'username').send_keys(username)
         self.selenium.find_element(By.NAME, 'password').send_keys(password)
-        self.selenium.find_element(By.CSS_SELECTOR, 'input[type="submit"]').click()
+        self.selenium.find_element(By.CSS_SELECTOR, 'input[type=\"submit\"]').click()
 
-        # Assegurar canvis carregats
         self.wait.until(EC.presence_of_element_located((By.ID, 'content')))
         self.assertIn('Site administration', self.selenium.title)
 
@@ -54,28 +53,28 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         # 1️⃣ Login com a admin
         self.login_and_assert(self.superuser_username, self.superuser_password)
 
-        # 2️⃣ Crear l'usuari
+        # 2️⃣ Crear usuari bàsic (sense is_staff)
         self.selenium.get(f"{self.live_server_url}/admin/auth/user/add/")
         self.wait.until(EC.presence_of_element_located((By.NAME, 'username')))
         self.selenium.find_element(By.NAME, 'username').send_keys(self.staff_username_test)
-        self.selenium.find_element(By.ID, 'id_is_staff').click()
         self.selenium.find_element(By.NAME, '_save').click()
 
-        # Obrim l'usuari creat
-        self.wait.until(EC.url_contains("/auth/user/"))
-        self.selenium.find_element(By.LINK_TEXT, self.staff_username_test).click()
+        # 3️⃣ Obrir usuari creat i marcar com staff
+        self.wait.until(EC.presence_of_element_located((By.LINK_TEXT, self.staff_username_test))).click()
+        self.wait.until(EC.presence_of_element_located((By.ID, 'id_is_staff'))).click()
+        self.selenium.find_element(By.NAME, '_save').click()
 
-        # 3️⃣ Assignar contrasenya (via "change password")
+        # 4️⃣ Assignar contrasenya
         self.wait.until(EC.presence_of_element_located((By.LINK_TEXT, "change password"))).click()
         self.wait.until(EC.presence_of_element_located((By.NAME, 'password1'))).send_keys(self.staff_password_test)
         self.selenium.find_element(By.NAME, 'password2').send_keys(self.staff_password_test)
         self.selenium.find_element(By.NAME, '_save').click()
 
-        # 4️⃣ Logout admin
+        # 5️⃣ Logout admin
         self.selenium.get(f"{self.live_server_url}/admin/logout/")
 
-        # 5️⃣ Login com a staff
+        # 6️⃣ Login amb el nou staff
         self.login_and_assert(self.staff_username_test, self.staff_password_test)
 
-        # Final: logout
+        # ✔ Finalitzar provant logout
         self.selenium.get(f"{self.live_server_url}/admin/logout/")
