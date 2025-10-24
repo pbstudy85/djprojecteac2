@@ -20,12 +20,13 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
     def setUpClass(cls):
         super().setUpClass()
         
-       
+        # Configuració per a Firefox Headless al CI/CD
         firefox_options = Options()
         firefox_options.add_argument("--headless")
         
-        
-        firefox_options.binary_location = "/usr/bin/firefox"
+        # FIX DEFINITIU: Eliminem l'especificació explícita de binary_location. 
+        # Ara Selenium ha de trobar el binari de Firefox automàticament mitjançant el PATH del sistema, 
+        # ja que s'ha instal·lat correctament amb `apt-get` al ci.yml.
         
         cls.selenium = WebDriver(options=firefox_options) 
         cls.selenium.implicitly_wait(20)
