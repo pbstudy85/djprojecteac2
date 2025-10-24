@@ -2,8 +2,8 @@
 
 from django.test import LiveServerTestCase
 from django.contrib.auth.models import User
-from selenium.webdriver.firefox.webdriver import WebDriver 
-from selenium.webdriver.firefox.options import Options      
+from selenium.webdriver.chrome.webdriver import WebDriver 
+from selenium.webdriver.chrome.options import Options      
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -20,15 +20,15 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
     def setUpClass(cls):
         super().setUpClass()
         
-        # Configuració per a Firefox Headless al CI/CD
-        firefox_options = Options()
-        firefox_options.add_argument("--headless")
+        # Configuració per a Chrome Headless (més estable al CI/CD)
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        # Arguments essencials per a entorns CI de Linux
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
         
-        # FIX DEFINITIU: Eliminem l'especificació explícita de binary_location. 
-        # Ara Selenium ha de trobar el binari de Firefox automàticament mitjançant el PATH del sistema, 
-        # ja que s'ha instal·lat correctament amb `apt-get` al ci.yml.
-        
-        cls.selenium = WebDriver(options=firefox_options) 
+        # Utilitzem el WebDriver de Chrome
+        cls.selenium = WebDriver(options=chrome_options) 
         cls.selenium.implicitly_wait(20)
 
         #superusuari
@@ -70,7 +70,7 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         # Navegar a la pàgina d'afegir usuari
         self.selenium.get('%s%s' % (self.live_server_url, '/admin/auth/user/add/'))
         
-        
+        # LÒGICA D'ESTABILITAT MANTINGUDA
         WebDriverWait(self.selenium, 10).until(
              EC.visibility_of_element_located((By.NAME, 'username')) 
         )
