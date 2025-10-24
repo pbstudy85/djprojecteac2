@@ -10,7 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 
 class StaffCreationAndVerificationTest(LiveServerTestCase):
-    #credencials
+    # credencials
     superuser_username = "isard"
     superuser_password = "pirineus"
     staff_username_test = "staffpol"
@@ -20,22 +20,15 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
     def setUpClass(cls):
         super().setUpClass()
         
-        # Configuració per a Chrome Headless (més estable al CI/CD)
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        # Arguments essencials per a entorns CI de Linux
+        chrome_options.add_argument("--headless=new")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.binary_location = "/usr/bin/google-chrome"  # GitHub Actions usa Chrome
 
-        # FIX CLAU: Especificar la ruta exacta de l'executable de Chromium
-        # Selenium cerca 'google-chrome' per defecte, però 'apt-get' instal·la 'chromium-browser'
-        chrome_options.binary_location = "/usr/bin/chromium-browser"
-        
-        # Utilitzem el WebDriver de Chrome
-        cls.selenium = WebDriver(options=chrome_options) 
-        cls.selenium.implicitly_wait(20)
+        cls.selenium = WebDriver(options=chrome_options)
+        cls.wait = WebDriverWait(cls.selenium, 10)
 
-        #superusuari
         User.objects.create_superuser(
             cls.superuser_username, 'isard@isardvdi.com', cls.superuser_password
         )
@@ -46,68 +39,43 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         super().tearDownClass()
 
     def login_and_assert(self, username, password):
-        """Intenta fer login i verifica l'accés a l'Admin Home."""
-        self.selenium.get('%s%s' % (self.live_server_url, '/admin/'))
+        self.selenium.get(f"{self.live_server_url}/admin/login/")
         
-        WebDriverWait(self.selenium, 10).until(
-            EC.presence_of_element_located((By.NAME, 'username'))
-        )
-        
+        self.wait.until(EC.presence_of_element_located((By.NAME, 'username')))
         self.selenium.find_element(By.NAME, 'username').send_keys(username)
         self.selenium.find_element(By.NAME, 'password').send_keys(password)
         self.selenium.find_element(By.CSS_SELECTOR, 'input[type="submit"]').click()
-        
-        
-        WebDriverWait(self.selenium, 10).until(
-             EC.presence_of_element_located((By.ID, 'site-name'))
-        )
-        self.assertIn('Site administration', self.selenium.title, f"Login fallit per a l'usuari {username}.")
 
+        # Assegurar canvis carregats
+        self.wait.until(EC.presence_of_element_located((By.ID, 'content')))
+        self.assertIn('Site administration', self.selenium.title)
 
     def test_01_create_verify_staff_user(self):
-        """Test únic: Login Superuser -> Crea Staff -> Verifica llista -> Prova Login Staff."""
-        
-        #1: access com a superusuari
+        # 1️⃣ Login com a admin
         self.login_and_assert(self.superuser_username, self.superuser_password)
-        
-        #2: creació superusuari amb selenium          
-        # Navegar a la pàgina d'afegir usuari
-        self.selenium.get('%s%s' % (self.live_server_url, '/admin/auth/user/add/'))
-        
-        # LÒGICA D'ESTABILITAT MANTINGUDA
-        WebDriverWait(self.selenium, 10).until(
-             EC.visibility_of_element_located((By.NAME, 'username')) 
-        )
-        
+
+        # 2️⃣ Crear l'usuari
+        self.selenium.get(f"{self.live_server_url}/admin/auth/user/add/")
+        self.wait.until(EC.presence_of_element_located((By.NAME, 'username')))
         self.selenium.find_element(By.NAME, 'username').send_keys(self.staff_username_test)
-        self.selenium.find_element(By.NAME, 'password').send_keys(self.staff_password_test)
-        self.selenium.find_element(By.NAME, 'password2').send_keys(self.staff_password_test)
-        
-        
         self.selenium.find_element(By.ID, 'id_is_staff').click()
-        
-        #premer 'save'
         self.selenium.find_element(By.NAME, '_save').click()
 
-        #3:verificacions
-        
-        try:
-            # Esperem que la pàgina es redirigeixi a la llista (URL que conté /auth/user/)
-            WebDriverWait(self.selenium, 10).until(
-                 EC.url_contains('/auth/user/') 
-            )
-            #cercar nom d'usuari staffpol
-            self.selenium.find_element(By.XPATH, f"//a[text()='{self.staff_username_test}']")
-        except NoSuchElementException:
-            self.fail(f"ERROR: L'usuari Staff '{self.staff_username_test}' NO apareix a la llista d'usuaris.")
+        # Obrim l'usuari creat
+        self.wait.until(EC.url_contains("/auth/user/"))
+        self.selenium.find_element(By.LINK_TEXT, self.staff_username_test).click()
 
-        
-        
-        #logout
-        self.selenium.get('%s%s' % (self.live_server_url, '/admin/logout/'))
-        
-        
+        # 3️⃣ Assignar contrasenya (via "change password")
+        self.wait.until(EC.presence_of_element_located((By.LINK_TEXT, "change password"))).click()
+        self.wait.until(EC.presence_of_element_located((By.NAME, 'password1'))).send_keys(self.staff_password_test)
+        self.selenium.find_element(By.NAME, 'password2').send_keys(self.staff_password_test)
+        self.selenium.find_element(By.NAME, '_save').click()
+
+        # 4️⃣ Logout admin
+        self.selenium.get(f"{self.live_server_url}/admin/logout/")
+
+        # 5️⃣ Login com a staff
         self.login_and_assert(self.staff_username_test, self.staff_password_test)
-        
-        #logout
-        self.selenium.get('%s%s' % (self.live_server_url, '/admin/logout/'))
+
+        # Final: logout
+        self.selenium.get(f"{self.live_server_url}/admin/logout/")
