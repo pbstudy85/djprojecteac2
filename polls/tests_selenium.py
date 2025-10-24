@@ -2,8 +2,9 @@
 
 from django.test import LiveServerTestCase
 from django.contrib.auth.models import User
-from selenium.webdriver.chrome.webdriver import WebDriver
-from selenium.webdriver.chrome.options import Options
+# CANVI D'IMPORTACIONS CLAU: Utilitza Firefox en lloc de Chrome
+from selenium.webdriver.firefox.webdriver import WebDriver 
+from selenium.webdriver.firefox.options import Options      
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -20,21 +21,13 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
     def setUpClass(cls):
         super().setUpClass()
         
-        # headless per CI/CD
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
+        # HEADLESS PER CI/CD (Ara per Firefox)
+        firefox_options = Options()
+        firefox_options.add_argument("--headless")
         
-       
-        chrome_options.add_argument("--window-size=1920,1080")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--disable-software-rasterizer") 
-        chrome_options.add_argument("--no-zygote")
-        
-        cls.selenium = WebDriver(options=chrome_options) 
-      
-        cls.selenium.implicitly_wait(20) 
+        # CANVI CLAU: Utilitza el WebDriver de Firefox
+        cls.selenium = WebDriver(options=firefox_options) 
+        cls.selenium.implicitly_wait(20) # Mantenim l'espera llarga
 
         #superusuari
         User.objects.create_superuser(
@@ -50,7 +43,6 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         """Intenta fer login i verifica l'accés a l'Admin Home."""
         self.selenium.get('%s%s' % (self.live_server_url, '/admin/'))
         
-        # Augmentem a 10s també l'espera del login per consistència
         WebDriverWait(self.selenium, 10).until(
             EC.presence_of_element_located((By.NAME, 'username'))
         )
@@ -76,13 +68,12 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         # Navegar a la pàgina d'afegir usuari
         self.selenium.get('%s%s' % (self.live_server_url, '/admin/auth/user/add/'))
         
-       
+        # LÒGICA D'ESTABILITAT MANTINGUDA
         WebDriverWait(self.selenium, 10).until(
              EC.visibility_of_element_located((By.NAME, 'username')) 
         )
         
         self.selenium.find_element(By.NAME, 'username').send_keys(self.staff_username_test)
-        # La línia que falla ara està més protegida per l'espera explícita i els arguments de Chromium
         self.selenium.find_element(By.NAME, 'password').send_keys(self.staff_password_test)
         self.selenium.find_element(By.NAME, 'password2').send_keys(self.staff_password_test)
         
@@ -95,7 +86,7 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         #3:verificacions
         
         try:
-            
+            # Esperem que la pàgina es redirigeixi a la llista (URL que conté /auth/user/)
             WebDriverWait(self.selenium, 10).until(
                  EC.url_contains('/auth/user/') 
             )
