@@ -20,12 +20,12 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
     def setUpClass(cls):
         super().setUpClass()
         
-        # Configuració per a Firefox Headless al CI/CD
+       
         firefox_options = Options()
         firefox_options.add_argument("--headless")
         
-        # Ruta explícita del binari de Firefox (necessari per a GitHub Actions)
-        firefox_options.binary_location = "/usr/lib/firefox/firefox"
+        
+        firefox_options.binary_location = "/usr/bin/firefox"
         
         cls.selenium = WebDriver(options=firefox_options) 
         cls.selenium.implicitly_wait(20)
