@@ -68,8 +68,9 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         # Navegar a la pàgina d'afegir usuari
         self.selenium.get('%s%s' % (self.live_server_url, '/admin/auth/user/add/'))
         
+        # CANVI CRUCIAL: Utilitzem visibility_of_element_located per robustesa.
         WebDriverWait(self.selenium, 10).until(
-             EC.presence_of_element_located((By.NAME, 'username'))
+             EC.visibility_of_element_located((By.NAME, 'username')) 
         )
         
         self.selenium.find_element(By.NAME, 'username').send_keys(self.staff_username_test)
@@ -85,6 +86,10 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         #3:verificacions
         
         try:
+            # Esperem que la pàgina es redirigeixi a la llista (URL que conté /auth/user/)
+            WebDriverWait(self.selenium, 10).until(
+                 EC.url_contains('/auth/user/') 
+            )
             #cercar nom d'usuari staffpol
             self.selenium.find_element(By.XPATH, f"//a[text()='{self.staff_username_test}']")
         except NoSuchElementException:
