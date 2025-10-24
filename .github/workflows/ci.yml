@@ -22,10 +22,12 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install Chromium and dependencies
+   
+    - name: Install Firefox and Geckodriver
       run: |
         sudo apt-get update
-        sudo apt-get install -y chromium-browser
+        # Instal·lem Firefox i Geckodriver
+        sudo apt-get install -y firefox geckodriver
 
     - name: Install Dependencies
       run: |
@@ -35,11 +37,9 @@ jobs:
 
     - name: Run Django Selenium Tests
       run: |
-        export CHROME_BIN=/usr/bin/chromium-browser
+        
         export PATH=$PATH:/usr/bin
         
-       
         export PYTHONPATH=.
-        
         
         python manage.py test polls.tests_selenium --settings=djproject52.settings
