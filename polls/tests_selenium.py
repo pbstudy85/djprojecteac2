@@ -64,10 +64,13 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         #1: access com a superusuari
         self.login_and_assert(self.superuser_username, self.superuser_password)
         
-        #2: creació superusuari amb selenium        
+        #2: creació superusuari amb selenium          
         # Navegar a la pàgina d'afegir usuari
         self.selenium.get('%s%s' % (self.live_server_url, '/admin/auth/user/add/'))
         
+        WebDriverWait(self.selenium, 10).until(
+             EC.presence_of_element_located((By.NAME, 'username'))
+        )
         
         self.selenium.find_element(By.NAME, 'username').send_keys(self.staff_username_test)
         self.selenium.find_element(By.NAME, 'password').send_keys(self.staff_password_test)
@@ -87,7 +90,7 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         except NoSuchElementException:
             self.fail(f"ERROR: L'usuari Staff '{self.staff_username_test}' NO apareix a la llista d'usuaris.")
 
-       
+        
         
         #logout
         self.selenium.get('%s%s' % (self.live_server_url, '/admin/logout/'))
