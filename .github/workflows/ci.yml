@@ -23,29 +23,21 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     
-    - name: Install Firefox and Geckodriver (Manual Download)
+    - name: Install Chromium and ChromeDriver (for Selenium)
       run: |
         sudo apt-get update
-        # 1. Instal·lem Firefox i wget (per a la descàrrega manual)
-        sudo apt-get install -y firefox wget
+        # Instal·lem Chromium i el seu driver (més estable al CI)
+        sudo apt-get install -y chromium-browser chromium-chromedriver
         
-        # 2. Descarreguem Geckodriver directament
-        GECKODRIVER_VERSION="0.34.0" 
-        
-        wget https://github.com/mozilla/geckodriver/releases/download/v${GECKODRIVER_VERSION}/geckodriver-v${GECKODRIVER_VERSION}-linux64.tar.gz
-        
-        # Descomprimim
-        tar -zxf geckodriver-v${GECKODRIVER_VERSION}-linux64.tar.gz
-        
-        # 3. Movem l'executable a un directori del PATH
-        sudo mv geckodriver /usr/local/bin/
-        sudo chmod +x /usr/local/bin/geckodriver
+        # Moure el chromedriver a un directori del PATH
+        # La ruta pot variar lleugerament, usem el symlink /usr/local/bin
+        sudo ln -sf /usr/lib/chromium-browser/chromedriver /usr/local/bin/chromedriver
 
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
-        # Mantenim webdriver-manager tot i que no és necessari amb la descàrrega manual
+        
         python -m pip install webdriver-manager
 
     - name: Run Django Selenium Tests
