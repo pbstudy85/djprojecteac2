@@ -2,7 +2,6 @@
 
 from django.test import LiveServerTestCase
 from django.contrib.auth.models import User
-# CANVI D'IMPORTACIONS CLAU: Utilitza Firefox en lloc de Chrome
 from selenium.webdriver.firefox.webdriver import WebDriver 
 from selenium.webdriver.firefox.options import Options      
 from selenium.webdriver.common.by import By
@@ -21,11 +20,14 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
     def setUpClass(cls):
         super().setUpClass()
         
-        # HEADLESS PER CI/CD (Ara per Firefox)
+        
         firefox_options = Options()
         firefox_options.add_argument("--headless")
         
-        # CANVI CLAU: Utilitza el WebDriver de Firefox
+        
+        firefox_options.binary_location = "/usr/bin/firefox"
+        
+       
         cls.selenium = WebDriver(options=firefox_options) 
         cls.selenium.implicitly_wait(20) # Mantenim l'espera llarga
 
