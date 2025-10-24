@@ -22,17 +22,30 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-   
-    - name: Install Firefox and Geckodriver
+    
+    - name: Install Firefox and Geckodriver (Manual Download)
       run: |
         sudo apt-get update
-        # Instal·lem Firefox i Geckodriver
-        sudo apt-get install -y firefox geckodriver
+        # 1. Instal·lem Firefox i wget (per a la descàrrega manual)
+        sudo apt-get install -y firefox wget
+        
+        # 2. Descarreguem Geckodriver directament
+        GECKODRIVER_VERSION="0.34.0" 
+        
+        wget https://github.com/mozilla/geckodriver/releases/download/v${GECKODRIVER_VERSION}/geckodriver-v${GECKODRIVER_VERSION}-linux64.tar.gz
+        
+        # Descomprimim
+        tar -zxf geckodriver-v${GECKODRIVER_VERSION}-linux64.tar.gz
+        
+        # 3. Movem l'executable a un directori del PATH
+        sudo mv geckodriver /usr/local/bin/
+        sudo chmod +x /usr/local/bin/geckodriver
 
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
+        # Mantenim webdriver-manager tot i que no és necessari amb la descàrrega manual
         python -m pip install webdriver-manager
 
     - name: Run Django Selenium Tests
