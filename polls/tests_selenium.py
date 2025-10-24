@@ -20,16 +20,15 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
     def setUpClass(cls):
         super().setUpClass()
         
-        
+        # Configuració per a Firefox Headless al CI/CD
         firefox_options = Options()
         firefox_options.add_argument("--headless")
         
+        # Ruta explícita del binari de Firefox (necessari per a GitHub Actions)
+        firefox_options.binary_location = "/usr/lib/firefox/firefox"
         
-        firefox_options.binary_location = "/usr/bin/firefox"
-        
-       
         cls.selenium = WebDriver(options=firefox_options) 
-        cls.selenium.implicitly_wait(20) # Mantenim l'espera llarga
+        cls.selenium.implicitly_wait(20)
 
         #superusuari
         User.objects.create_superuser(
@@ -70,7 +69,7 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         # Navegar a la pàgina d'afegir usuari
         self.selenium.get('%s%s' % (self.live_server_url, '/admin/auth/user/add/'))
         
-        # LÒGICA D'ESTABILITAT MANTINGUDA
+        
         WebDriverWait(self.selenium, 10).until(
              EC.visibility_of_element_located((By.NAME, 'username')) 
         )
