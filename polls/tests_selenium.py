@@ -24,7 +24,7 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         chrome_options.add_argument("--headless=new")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.binary_location = "/usr/bin/google-chrome"  # GitHub Actions usa Chrome
+        chrome_options.binary_location = "/usr/bin/google-chrome-stable"
 
         cls.selenium = WebDriver(options=chrome_options)
         cls.wait = WebDriverWait(cls.selenium, 10)
