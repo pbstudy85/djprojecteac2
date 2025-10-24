@@ -26,8 +26,15 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         
+       
+        chrome_options.add_argument("--window-size=1920,1080")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--disable-software-rasterizer") 
+        chrome_options.add_argument("--no-zygote")
+        
         cls.selenium = WebDriver(options=chrome_options) 
-        cls.selenium.implicitly_wait(10)
+      
+        cls.selenium.implicitly_wait(20) 
 
         #superusuari
         User.objects.create_superuser(
@@ -43,7 +50,8 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         """Intenta fer login i verifica l'accés a l'Admin Home."""
         self.selenium.get('%s%s' % (self.live_server_url, '/admin/'))
         
-        WebDriverWait(self.selenium, 5).until(
+        # Augmentem a 10s també l'espera del login per consistència
+        WebDriverWait(self.selenium, 10).until(
             EC.presence_of_element_located((By.NAME, 'username'))
         )
         
@@ -52,7 +60,7 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         self.selenium.find_element(By.CSS_SELECTOR, 'input[type="submit"]').click()
         
         
-        WebDriverWait(self.selenium, 5).until(
+        WebDriverWait(self.selenium, 10).until(
              EC.presence_of_element_located((By.ID, 'site-name'))
         )
         self.assertIn('Site administration', self.selenium.title, f"Login fallit per a l'usuari {username}.")
@@ -68,12 +76,13 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         # Navegar a la pàgina d'afegir usuari
         self.selenium.get('%s%s' % (self.live_server_url, '/admin/auth/user/add/'))
         
-        # CANVI CLAU D'ESTABILITAT: Esperem que el camp sigui VISIBLE (més segur que només present)
+       
         WebDriverWait(self.selenium, 10).until(
              EC.visibility_of_element_located((By.NAME, 'username')) 
         )
         
         self.selenium.find_element(By.NAME, 'username').send_keys(self.staff_username_test)
+        # La línia que falla ara està més protegida per l'espera explícita i els arguments de Chromium
         self.selenium.find_element(By.NAME, 'password').send_keys(self.staff_password_test)
         self.selenium.find_element(By.NAME, 'password2').send_keys(self.staff_password_test)
         
@@ -86,7 +95,7 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         #3:verificacions
         
         try:
-            # Esperem que la pàgina es redirigeixi a la llista (URL que conté /auth/user/)
+            
             WebDriverWait(self.selenium, 10).until(
                  EC.url_contains('/auth/user/') 
             )
