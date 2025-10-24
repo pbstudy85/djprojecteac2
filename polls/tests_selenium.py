@@ -1,6 +1,6 @@
 # polls/tests_selenium.py
 
-from django.test import StaticLiveServerTestCase
+from django.test import LiveServerTestCase
 from django.contrib.auth.models import User
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.chrome.options import Options
@@ -9,8 +9,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 
-class StaffCreationAndVerificationTest(StaticLiveServerTestCase):
-
+class StaffCreationAndVerificationTest(LiveServerTestCase):
     #credencials
     superuser_username = "isard"
     superuser_password = "pirineus"
