@@ -68,7 +68,7 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         # Navegar a la pàgina d'afegir usuari
         self.selenium.get('%s%s' % (self.live_server_url, '/admin/auth/user/add/'))
         
-        # CANVI CRUCIAL: Utilitzem visibility_of_element_located per robustesa.
+        # CANVI CLAU D'ESTABILITAT: Esperem que el camp sigui VISIBLE (més segur que només present)
         WebDriverWait(self.selenium, 10).until(
              EC.visibility_of_element_located((By.NAME, 'username')) 
         )
