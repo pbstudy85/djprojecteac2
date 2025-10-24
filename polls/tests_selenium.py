@@ -26,6 +26,10 @@ class StaffCreationAndVerificationTest(LiveServerTestCase):
         # Arguments essencials per a entorns CI de Linux
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
+
+        # FIX CLAU: Especificar la ruta exacta de l'executable de Chromium
+        # Selenium cerca 'google-chrome' per defecte, però 'apt-get' instal·la 'chromium-browser'
+        chrome_options.binary_location = "/usr/bin/chromium-browser"
         
         # Utilitzem el WebDriver de Chrome
         cls.selenium = WebDriver(options=chrome_options) 
